@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<title>化妝品庫</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--pink:#E8607A;--pink-light:#FDE8ED;--cream:#FDF8F5;--border:#EDE0DC;--white:#FFFFFF;--text:#2A1F1F;--muted:#9A8585;--warn-bg:#FFF4E0;--warn-text:#8A5800;--exp-bg:#FEEAEA;--exp-text:#8A2020;--ok-bg:#E8F5EE;--ok-text:#1E6640;--radius:14px;--radius-sm:8px}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--cream);color:var(--text);min-height:100vh}
+.header{background:var(--white);border-bottom:1px solid var(--border);padding:14px 16px 0;position:sticky;top:0;z-index:30}
+.header-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:10px}
+.header-titles{flex:1;min-width:0}
+.app-name{font-size:17px;font-weight:700;letter-spacing:0.01em;color:var(--text);line-height:1.2}
+.app-name .dot{color:var(--muted);font-weight:400;margin:0 2px}
+.app-name .glow{color:var(--pink)}
+.app-subtitle{font-size:10px;color:var(--muted);margin-top:3px;line-height:1.4;font-style:italic}
+.add-btn{background:var(--pink);color:white;border:none;border-radius:20px;padding:7px 15px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;flex-shrink:0;margin-top:2px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-bottom:10px}
+.stat{text-align:center}
+.stat-n{font-size:19px;font-weight:700;line-height:1}
+.stat-n.red{color:var(--pink)}
+.stat-n.amber{color:#D48000}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.tab-scroll{display:flex;gap:5px;overflow-x:auto;padding-bottom:10px;scrollbar-width:none}
+.tab-scroll::-webkit-scrollbar{display:none}
+.tab{background:none;border:1.5px solid var(--border);border-radius:20px;padding:5px 12px;font-size:12px;font-weight:500;cursor:pointer;color:var(--muted);white-space:nowrap;font-family:inherit;transition:all .15s}
+.tab.on{background:var(--pink);border-color:var(--pink);color:white}
+.search-wrap{padding:10px 14px}
+.search-input{width:100%;border:1.5px solid var(--border);border-radius:20px;padding:9px 15px;font-size:14px;font-family:inherit;background:var(--white);color:var(--text);outline:none}
+.search-input:focus{border-color:var(--pink)}
+.section-lbl{grid-column:1/-1;font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.08em;padding:8px 2px 4px;text-transform:uppercase}
+.grid{padding:0 12px 100px;display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:9px}
+.card{background:var(--white);border:1.5px solid var(--border);border-radius:var(--radius);padding:11px 12px;cursor:pointer;transition:transform .1s;box-shadow:0 2px 10px rgba(140,80,80,.06)}
+.card:active{transform:scale(.97)}
+.card.exp{border-left:4px solid var(--pink)}
+.card.warn{border-left:4px solid #F0A500}
+.card.wishlist{border-style:dashed}
+.cat-chip{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;margin-bottom:5px;letter-spacing:.02em}
+.chip-保養防曬{background:#E0F5ED;color:#1A6640}
+.chip-遮瑕{background:#FDE8ED;color:#8A3050}
+.chip-粉底{background:#FFF0E0;color:#7A4800}
+.chip-腮紅{background:#FEEAE0;color:#7A3520}
+.chip-眼妝{background:#EEEAFE;color:#3C2A8A}
+.chip-定妝{background:#E0EFFE;color:#0A4A8A}
+.chip-打亮{background:#FFFAE0;color:#7A6000}
+.chip-口紅{background:#FDE8ED;color:#8A2050}
+.chip-想買{background:#F0EDE8;color:#5A4A40}
+.chip-備品{background:#EDE8FE;color:#4A3A8A}
+.cname{font-size:15px;font-weight:700;line-height:1.3;margin-bottom:3px}
+.cbrand{font-size:12px;color:var(--muted);margin-bottom:4px}
+.cshade-label{font-size:13px;font-weight:500;color:var(--text);margin-bottom:6px}
+.shade-pill-lg{display:flex;align-items:center;gap:5px;margin-bottom:3px}
+.shade-dot-lg{width:13px;height:13px;border-radius:50%;border:1px solid rgba(0,0,0,.1);flex-shrink:0}
+.card-foot{display:flex;align-items:center;justify-content:space-between}
+.qty-ctrl{display:flex;align-items:center;gap:5px}
+.qty-btn{background:#F5F0EE;border:none;border-radius:6px;width:24px;height:24px;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#6B5F5F;font-family:inherit;line-height:1}
+.qty-val{font-size:13px;font-weight:700;min-width:18px;text-align:center}
+.exp-badge{font-size:10px;padding:2px 7px;border-radius:10px;font-weight:700}
+.eb-ok{background:var(--ok-bg);color:var(--ok-text)}
+.eb-warn{background:var(--warn-bg);color:var(--warn-text)}
+.eb-exp{background:var(--exp-bg);color:var(--exp-text)}
+.exp-days{font-size:10px;color:var(--muted);margin-top:4px}
+.card-note{font-size:10px;color:var(--muted);margin-top:3px;font-style:italic}
+.empty{grid-column:1/-1;text-align:center;padding:50px 20px;color:var(--muted);font-size:15px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(40,20,20,.4);z-index:100;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.sheet{background:var(--white);border-radius:20px 20px 0 0;width:100%;max-width:560px;max-height:92vh;overflow-y:auto;padding:0 0 40px;animation:slideUp .22s ease}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sheet-handle{width:36px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0}
+.sheet-title{font-size:17px;font-weight:700;padding:14px 18px 2px}
+.form-body{padding:6px 16px 0}
+.fg{margin-bottom:11px}
+.fg label{display:block;font-size:11px;color:var(--muted);margin-bottom:3px;font-weight:500}
+.fg input,.fg select,.fg textarea{width:100%;border:1.5px solid var(--border);border-radius:var(--radius-sm);padding:8px 11px;font-size:14px;font-family:inherit;background:var(--white);color:var(--text);outline:none;-webkit-appearance:none}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--pink)}
+.fg textarea{resize:vertical;min-height:56px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.shade-row{display:flex;gap:6px;align-items:center;margin-bottom:5px}
+.shade-row input[type=text]{flex:1}
+.shade-row input[type=color]{width:34px;height:34px;padding:2px;border-radius:var(--radius-sm);cursor:pointer;border:1.5px solid var(--border)}
+.rm-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:20px;padding:0 3px}
+.add-shade-btn{background:none;border:1.5px dashed var(--border);border-radius:var(--radius-sm);width:100%;padding:7px;font-size:13px;color:var(--muted);cursor:pointer;font-family:inherit;margin-top:2px}
+.sheet-actions{display:flex;gap:8px;padding:12px 16px 0}
+.btn{flex:1;padding:12px;border-radius:var(--radius-sm);font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;border:1.5px solid var(--border);background:none;color:var(--text)}
+.btn.prim{background:var(--pink);color:white;border-color:var(--pink)}
+.btn.del{color:var(--pink);border-color:var(--pink-light);background:var(--pink-light);flex:.6}
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="header-top">
+    <div class="header-titles">
+      <div class="app-name">✨ Soft<span class="dot">•</span><span class="glow">Glow</span><span class="dot">•</span>Fresh</div>
+      <div class="app-subtitle">Pretty girls don't do drama 'less we wanna,<br>it'll be depending on the day</div>
+    </div>
+    <button class="add-btn" onclick="openAdd()">＋ 新增</button>
+  </div>
+  <div class="stats" id="stats"></div>
+  <div class="tab-scroll" id="tabs"></div>
+</div>
+<div class="search-wrap">
+  <input class="search-input" type="search" placeholder="搜尋品牌、名稱、色號..." id="search" oninput="render()">
+</div>
+<div class="grid" id="grid"></div>
+
+<div class="overlay" id="overlay" onclick="bgClose(event)">
+  <div class="sheet">
+    <div class="sheet-handle"></div>
+    <div class="sheet-title" id="sheet-title">新增化妝品</div>
+    <div class="form-body">
+      <div class="frow">
+        <div class="fg"><label>類別</label>
+          <select id="f-cat">
+            <option>保養防曬</option><option>遮瑕</option><option>粉底</option>
+            <option>腮紅</option><option>眼妝</option><option>定妝</option>
+            <option>打亮</option><option>口紅</option><option>備品</option><option>想買</option>
+          </select>
+        </div>
+        <div class="fg"><label>數量</label><input type="number" id="f-qty" min="0" value="1" inputmode="numeric"></div>
+      </div>
+      <div class="fg"><label>品牌</label><input type="text" id="f-brand" placeholder="例：NARS、3CE"></div>
+      <div class="fg"><label>名稱 / 系列</label><input type="text" id="f-name" placeholder="例：氣墊粉底 SPF50"></div>
+      <div class="fg">
+        <label>色號</label>
+        <div id="shade-list"></div>
+        <button class="add-shade-btn" onclick="addShade()">＋ 新增色號</button>
+      </div>
+      <div class="frow">
+        <div class="fg"><label>購買日期</label><input type="date" id="f-buy"></div>
+        <div class="fg"><label>到期日期</label><input type="date" id="f-exp"></div>
+      </div>
+      <div class="fg"><label>備註（囤貨 / 開封 / 其他）</label><textarea id="f-note"></textarea></div>
+    </div>
+    <div class="sheet-actions">
+      <button class="btn del" id="del-btn" style="display:none" onclick="delItem()">刪除</button>
+      <button class="btn" onclick="closeSheet()">取消</button>
+      <button class="btn prim" onclick="saveItem()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const CATS=['全部','保養防曬','遮瑕','粉底','腮紅','眼妝','定妝','打亮','口紅','備品','想買'];
+const KEY='cosme_v3';
+let items=[], curCat='全部', editId=null, shadeRows=[];
+
+const SEED=[
+  {id:1,cat:"保養防曬",brand:"KATE",name:"凝光妝前乳",shades:[],qty:1,buy:"",exp:"2028-03-01",note:"開封"},
+  {id:2,cat:"保養防曬",brand:"Giorgio Armani",name:"訂製奢潤水光妝前乳",shades:[],qty:1,buy:"",exp:"2028-08-01",note:"開封"},
+  {id:3,cat:"保養防曬",brand:"Chasin' Rabbits",name:"提亮素顏霜",shades:[],qty:1,buy:"",exp:"2027-01-01",note:"開封"},
+  {id:4,cat:"保養防曬",brand:"SOFINA Ange",name:"水感控油校色妝前乳",shades:[{c:"#F7C0C8",n:"粉"}],qty:1,buy:"",exp:"2026-09-01",note:"開封"},
+  {id:5,cat:"保養防曬",brand:"CelesteTerry",name:"Q彈柔霧奶凍",shades:[{c:"#FFF5F0",n:"生乳"}],qty:1,buy:"",exp:"2027-05-01",note:"開封"},
+  {id:6,cat:"保養防曬",brand:"A.M Fairyland",name:"濾鏡光零瑕小方盒",shades:[{c:"#F0EDE8",n:"吸油"}],qty:1,buy:"",exp:"2030-11-01",note:"開封"},
+  {id:7,cat:"保養防曬",brand:"DHC",name:"金靚白水亮防曬乳",shades:[],qty:1,buy:"",exp:"2027-01-01",note:"開封"},
+  {id:8,cat:"保養防曬",brand:"Bobbi Brown",name:"維他命完美乳霜",shades:[],qty:1,buy:"",exp:"2027-12-01",note:"開封"},
+  {id:9,cat:"保養防曬",brand:"Ongredients",name:"黃油乳液",shades:[],qty:1,buy:"",exp:"2028-08-01",note:"開封"},
+  {id:10,cat:"保養防曬",brand:"ROUND LAB",name:"獨島白樺樹保濕防曬霜",shades:[],qty:1,buy:"",exp:"2028-01-01",note:"開封"},
+  {id:11,cat:"遮瑕",brand:"Kai Beauty",name:"肌因校色遮瑕盤",shades:[{c:"#F5B8A0",n:"#01 Peach"}],qty:1,buy:"",exp:"2027-03-01",note:"開封"},
+  {id:12,cat:"遮瑕",brand:"Kai Beauty",name:"肌因校色遮瑕盤",shades:[{c:"#C06070",n:"#02 Ruby"}],qty:1,buy:"",exp:"2027-03-01",note:"開封"},
+  {id:13,cat:"遮瑕",brand:"Kai Beauty",name:"裸妝肌密遮瑕膏",shades:[{c:"#E8C0A8",n:"R2"}],qty:1,buy:"",exp:"2028-02-01",note:"開封"},
+  {id:14,cat:"遮瑕",brand:"CelesteTerry",name:"Q彈柔霧奶凍",shades:[{c:"#C8D8A0",n:"開心果"}],qty:1,buy:"",exp:"2027-05-01",note:"開封"},
+  {id:15,cat:"遮瑕",brand:"CelesteTerry",name:"Q彈柔霧奶凍",shades:[{c:"#C8D8A0",n:"開心果"}],qty:1,buy:"",exp:"2027-10-01",note:"囤貨"},
+  {id:16,cat:"遮瑕",brand:"23YEARSOLD",name:"心葉淨透無暇遮瑕",shades:[{c:"#D8B898",n:"2N"}],qty:1,buy:"",exp:"2028-10-01",note:"開封"},
+  {id:17,cat:"遮瑕",brand:"23YEARSOLD",name:"心葉淨透無暇遮瑕",shades:[{c:"#D4B090",n:"1.5B"}],qty:1,buy:"",exp:"2028-10-01",note:"開封"},
+  {id:18,cat:"遮瑕",brand:"23YEARSOLD",name:"心葉淨透無暇遮瑕",shades:[{c:"#F0D8C8",n:"0.5P"}],qty:1,buy:"",exp:"2028-03-01",note:"開封"},
+  {id:19,cat:"遮瑕",brand:"KATE",name:"凝光校色遮瑕液",shades:[{c:"#F7C0C8",n:"PK"}],qty:1,buy:"",exp:"2028-08-01",note:"開封"},
+  {id:20,cat:"粉底",brand:"SHISEIDO",name:"超聚光活膚粉底精華",shades:[{c:"#D4A878",n:"220"}],qty:1,buy:"",exp:"2026-08-01",note:"開封"},
+  {id:21,cat:"粉底",brand:"Giorgio Armani",name:"超持妝絲絨氣墊粉餅",shades:[{c:"#D0A070",n:"#3"}],qty:1,buy:"",exp:"2027-04-01",note:"囤貨"},
+  {id:22,cat:"粉底",brand:"Giorgio Armani",name:"超持妝絲絨氣墊粉餅",shades:[{c:"#D0A070",n:"#3"}],qty:1,buy:"",exp:"2027-05-01",note:"囤貨"},
+  {id:23,cat:"粉底",brand:"Giorgio Armani",name:"超持妝絲絨氣墊粉餅",shades:[{c:"#D0A070",n:"#3"}],qty:1,buy:"",exp:"2027-04-01",note:"開封"},
+  {id:24,cat:"腮紅",brand:"Giorgio Armani",name:"輕透亮絲光漂染腮紅露",shades:[{c:"#E8A090",n:"#63"}],qty:1,buy:"",exp:"2028-10-01",note:"開封"},
+  {id:25,cat:"腮紅",brand:"Celeste Terry",name:"Q彈柔霧奶凍",shades:[{c:"#FFCCB0",n:"白桃"}],qty:1,buy:"",exp:"2026-10-01",note:"開封"},
+  {id:26,cat:"腮紅",brand:"Celeste Terry",name:"Q彈柔霧奶凍",shades:[{c:"#A090C8",n:"藍莓"}],qty:1,buy:"",exp:"2027-07-01",note:"開封"},
+  {id:27,cat:"腮紅",brand:"LAKA",name:"戀愛原色霧光腮紅",shades:[{c:"#E89090",n:"707"}],qty:1,buy:"",exp:"2026-02-01",note:"開封"},
+  {id:28,cat:"腮紅",brand:"CHANEL",name:"輕霧持色腮紅",shades:[{c:"#E8A0A0",n:"370"}],qty:1,buy:"",exp:"",note:"開封"},
+  {id:29,cat:"腮紅",brand:"SUQQU",name:"晶采柔艷頰彩",shades:[{c:"#F0B0A8",n:"#9 可憐咲"}],qty:1,buy:"",exp:"",note:"開封"},
+  {id:30,cat:"腮紅",brand:"3CE",name:"柔霧單色胭脂",shades:[{c:"#E8C0A8",n:"NUDE PEACH"}],qty:1,buy:"",exp:"2026-01-01",note:"開封"},
+  {id:31,cat:"腮紅",brand:"essence",name:"緞面柔霧腮紅",shades:[{c:"#F0A090",n:"#20"}],qty:1,buy:"",exp:"2021-05-01",note:"已過期"},
+  {id:32,cat:"腮紅",brand:"Peripera",name:"刻字微笑腮紅",shades:[{c:"#F4B0A0",n:"#12 Sunny Pink"}],qty:1,buy:"",exp:"2026-06-01",note:"開封"},
+  {id:33,cat:"腮紅",brand:"Giorgio Armani",name:"輕透亮絲光漂染腮紅露",shades:[{c:"#F0B0A0",n:"#50.5"}],qty:1,buy:"",exp:"2027-02-01",note:"開封"},
+  {id:34,cat:"腮紅",brand:"Giorgio Armani",name:"薄紗流光粉露 液體腮紅",shades:[],qty:1,buy:"",exp:"2028-01-01",note:"開封"},
+  {id:35,cat:"腮紅",brand:"NARS",name:"炫色腮紅",shades:[{c:"#E89898",n:"Tempted"}],qty:1,buy:"",exp:"2026-09-01",note:""},
+  {id:36,cat:"腮紅",brand:"RMK",name:"透光立體頰采",shades:[{c:"#F0B0A8",n:"#16"}],qty:1,buy:"",exp:"2028-11-01",note:""},
+  {id:37,cat:"腮紅",brand:"Giorgio Armani",name:"輕透亮絲柔聚光腮紅",shades:[{c:"#E8A898",n:"#10"}],qty:1,buy:"",exp:"2026-09-01",note:""},
+  {id:38,cat:"腮紅",brand:"毛戈平",name:"柔紗幻顏腮紅",shades:[{c:"#E8A090",n:"806"}],qty:1,buy:"",exp:"2027-06-01",note:""},
+  {id:39,cat:"腮紅",brand:"HEME",name:"純色腮紅",shades:[{c:"#E8C0B0",n:"Softtan"}],qty:1,buy:"",exp:"2025-03-01",note:""},
+  {id:40,cat:"腮紅",brand:"Rare Beauty",name:"打亮腮紅霜",shades:[{c:"#F0D0C0",n:"Nearly Neutral"}],qty:1,buy:"",exp:"",note:""},
+  {id:41,cat:"腮紅",brand:"DIOR",name:"粉漾緹花頰彩盤",shades:[{c:"#F0B0A8",n:"012"}],qty:1,buy:"",exp:"2027-01-01",note:""},
+  {id:42,cat:"腮紅",brand:"CLINIQUE",name:"小花腮紅",shades:[{c:"#F0A8A8",n:"19"}],qty:1,buy:"",exp:"",note:""},
+  {id:43,cat:"腮紅",brand:"Benefit",name:"夢遊仙境頰彩盒",shades:[{c:"#F0C0B8",n:"蒲公英"}],qty:1,buy:"",exp:"",note:""},
+  {id:44,cat:"眼妝",brand:"CEZANNE",name:"眉粉",shades:[{c:"#888080",n:"Charcoal Gray"}],qty:1,buy:"",exp:"",note:"開封"},
+  {id:45,cat:"眼妝",brand:"media",name:"自然柔和眉彩餅",shades:[{c:"#A08878",n:"DB"}],qty:1,buy:"",exp:"2027-02-01",note:"開封"},
+  {id:46,cat:"眼妝",brand:"Giorgio Armani",name:"設計師訂製綻色眼彩露",shades:[{c:"#C8A878",n:"#22"}],qty:1,buy:"",exp:"2025-09-01",note:"已過期"},
+  {id:47,cat:"眼妝",brand:"Giorgio Armani",name:"設計師訂製綻色眼彩露",shades:[{c:"#A8B8C8",n:"#18"}],qty:1,buy:"",exp:"2025-09-01",note:"已過期"},
+  {id:48,cat:"眼妝",brand:"Dior",name:"絕對搶眼摩登單色眼影",shades:[{c:"#9888A0",n:"763 霧面"}],qty:1,buy:"",exp:"2027-01-01",note:"開封"},
+  {id:49,cat:"眼妝",brand:"LAKA",name:"光譜單色眼影",shades:[{c:"#D0C0B8",n:"902"}],qty:1,buy:"",exp:"2026-03-01",note:"開封"},
+  {id:50,cat:"眼妝",brand:"LAKA",name:"光譜單色眼影",shades:[{c:"#B8C0D0",n:"908"}],qty:1,buy:"",exp:"2026-03-01",note:"開封"},
+  {id:51,cat:"眼妝",brand:"LAKA",name:"光譜單色眼影",shades:[{c:"#E8D8C8",n:"901"}],qty:1,buy:"",exp:"2026-03-01",note:"開封"},
+  {id:52,cat:"眼妝",brand:"LAKA",name:"光譜單色眼影",shades:[{c:"#C0D0C0",n:"912"}],qty:1,buy:"",exp:"2026-02-01",note:"開封"},
+  {id:53,cat:"眼妝",brand:"TOM FORD",name:"高級訂製四格眼盤",shades:[{c:"#C8B8A8",n:"35"}],qty:1,buy:"",exp:"",note:"開封"},
+  {id:54,cat:"眼妝",brand:"INTEGRATE",name:"三度漸層光綻眼影盒",shades:[{c:"#D8C0A8",n:"BE702"}],qty:1,buy:"",exp:"",note:"開封"},
+  {id:55,cat:"眼妝",brand:"KATE",name:"深玫絲絨眼影盒",shades:[{c:"#90A890",n:"GN-1"}],qty:1,buy:"",exp:"",note:"開封"},
+  {id:56,cat:"眼妝",brand:"tarte",name:"tartelette tease",shades:[],qty:1,buy:"",exp:"",note:"開封"},
+  {id:57,cat:"眼妝",brand:"3CE",name:"九色紛呈眼影盤",shades:[{c:"#C0B0A8",n:"SMOOTHER"}],qty:1,buy:"",exp:"",note:"開封"},
+  {id:58,cat:"眼妝",brand:"CHANEL",name:"時尚裸光立體眼彩盤",shades:[{c:"#D8C8B8",n:"WARM"}],qty:1,buy:"",exp:"",note:"開封"},
+  {id:59,cat:"眼妝",brand:"EXCEL",name:"裸色深邃眼影",shades:[{c:"#C8B0A0",n:"SR03"}],qty:1,buy:"",exp:"",note:"開封"},
+  {id:60,cat:"眼妝",brand:"Kai Beauty",name:"無重力飛長睫毛膏",shades:[{c:"#202020",n:"黑"}],qty:1,buy:"",exp:"2027-01-01",note:"開封"},
+  {id:61,cat:"眼妝",brand:"Kai Beauty",name:"膠點持色眼線筆",shades:[{c:"#604838",n:"摩卡棕"}],qty:1,buy:"",exp:"2027-05-01",note:"開封"},
+  {id:62,cat:"眼妝",brand:"CANMAKE",name:"精緻濃密睫毛膏",shades:[{c:"#181818",n:"V01"}],qty:1,buy:"",exp:"2027-11-01",note:"開封"},
+  {id:63,cat:"定妝",brand:"CEZANNE",name:"輕透柔焦蜜粉餅",shades:[],qty:1,buy:"",exp:"2028-11-01",note:"開封"},
+  {id:64,cat:"定妝",brand:"CEZANNE",name:"輕透柔焦蜜粉餅",shades:[],qty:1,buy:"",exp:"2028-11-01",note:"囤貨"},
+  {id:65,cat:"定妝",brand:"RMK",name:"絲柔定妝餅",shades:[],qty:1,buy:"",exp:"2028-10-01",note:"開封"},
+  {id:66,cat:"定妝",brand:"Giorgio Armani",name:"設計師冰絲持妝水蜜粉",shades:[],qty:1,buy:"",exp:"2027-01-01",note:"開封"},
+  {id:67,cat:"定妝",brand:"Kai Beauty",name:"雙色立體修容餅",shades:[{c:"#E8D0B8",n:"10 Light"}],qty:1,buy:"",exp:"2026-03-01",note:"開封"},
+  {id:68,cat:"定妝",brand:"Kai Beauty",name:"柔霧持妝蜜粉餅",shades:[{c:"#D8D0F0",n:"L00紫"}],qty:1,buy:"",exp:"2026-10-01",note:"開封"},
+  {id:69,cat:"定妝",brand:"Fenty Beauty",name:"控油蜜粉餅",shades:[{c:"#F8F4F0",n:"透明"}],qty:1,buy:"",exp:"",note:"開封"},
+  {id:70,cat:"打亮",brand:"SHISEIDO",name:"超聚光持光蜜粉",shades:[{c:"#F8D8D0",n:"03"}],qty:1,buy:"",exp:"2028-06-01",note:"開封"},
+  {id:71,cat:"打亮",brand:"SHISEIDO",name:"超聚光持光蜜粉",shades:[{c:"#F8D8D0",n:"03"}],qty:1,buy:"",exp:"2028-09-01",note:"囤貨"},
+  {id:72,cat:"打亮",brand:"SHISEIDO",name:"Luminizing Satin Face Color",shades:[{c:"#F8D0D8",n:"PK107"}],qty:1,buy:"",exp:"2022-05-01",note:"已過期"},
+  {id:73,cat:"打亮",brand:"CEZANNE",name:"柔焦濾鏡光影粉",shades:[{c:"#F8E8D8",n:"01"}],qty:1,buy:"",exp:"2028-11-01",note:"開封"},
+  {id:74,cat:"打亮",brand:"Laura Mercier",name:"Matte Radiance Baked Powder Highlight",shades:[{c:"#F0E0D0",n:"01"}],qty:1,buy:"",exp:"2021-08-01",note:"已過期"},
+  {id:75,cat:"打亮",brand:"A'MINE ME",name:"丹妮表姊聯名打亮",shades:[{c:"#F8E8C8",n:"ME602"}],qty:1,buy:"",exp:"2022-04-01",note:"已過期"},
+  {id:76,cat:"打亮",brand:"A.M Fairyland",name:"澎澎秘光小臉盤",shades:[{c:"#F8F0E0",n:"N001"}],qty:1,buy:"",exp:"2030-01-01",note:"開封"},
+  {id:77,cat:"打亮",brand:"madpro",name:"Bella",shades:[],qty:1,buy:"",exp:"2023-05-01",note:"已過期"},
+  {id:78,cat:"打亮",brand:"essence",name:"美人魚打亮",shades:[],qty:1,buy:"",exp:"2022-10-01",note:"已過期"},
+  {id:79,cat:"口紅",brand:"Giorgio Armani",name:"奢華絲絨訂製唇膏",shades:[{c:"#C85050",n:"405"}],qty:1,buy:"",exp:"2026-07-01",note:"開封"},
+  {id:80,cat:"口紅",brand:"KATE",name:"Lip Monster",shades:[{c:"#C06070",n:"15"}],qty:1,buy:"",exp:"",note:"開封"},
+  {id:81,cat:"想買",brand:"Chanel",name:"時尚裸光微滴泡泡腮紅",shades:[{c:"#F5C0B8",n:"Warm Pink"}],qty:0,buy:"",exp:"",note:"腮紅類"},
+];
+
+function loadData(){
+  try{const d=localStorage.getItem(KEY);if(d){items=JSON.parse(d);return;}}catch(e){}
+  items=JSON.parse(JSON.stringify(SEED));
+  saveData();
+}
+function saveData(){localStorage.setItem(KEY,JSON.stringify(items));}
+
+function daysLeft(exp){if(!exp)return null;return Math.ceil((new Date(exp)-new Date())/86400000);}
+function status(exp){const d=daysLeft(exp);if(d===null)return'none';if(d<0)return'exp';if(d<=90)return'warn';return'ok';}
+
+function renderStats(){
+  const owned=items.filter(i=>i.cat!=='想買');
+  const total=owned.reduce((a,i)=>a+Math.max(0,Number(i.qty)||0),0);
+  const exp=owned.filter(i=>status(i.exp)==='exp').length;
+  const warn=owned.filter(i=>status(i.exp)==='warn').length;
+  document.getElementById('stats').innerHTML=`
+    <div class="stat"><div class="stat-n">${owned.length}</div><div class="stat-lbl">品項</div></div>
+    <div class="stat"><div class="stat-n">${total}</div><div class="stat-lbl">總數量</div></div>
+    <div class="stat"><div class="stat-n red">${exp}</div><div class="stat-lbl">已過期</div></div>`;
+}
+
+function renderTabs(){
+  document.getElementById('tabs').innerHTML=CATS.map(c=>
+    `<button class="tab${curCat===c?' on':''}" onclick="setCat('${c}')">${c}</button>`).join('');
+}
+
+function setCat(c){curCat=c;renderTabs();render();}
+
+function render(){
+  renderStats();
+  const q=(document.getElementById('search').value||'').toLowerCase();
+  let list=items.filter(i=>{
+    if(curCat!=='全部'&&i.cat!==curCat)return false;
+    if(q&&!i.name.toLowerCase().includes(q)&&!i.brand.toLowerCase().includes(q)&&
+       !(i.shades||[]).some(s=>s.n.toLowerCase().includes(q)))return false;
+    return true;
+  }).sort((a,b)=>{
+    const r={exp:0,warn:1,ok:2,none:3};
+    return(r[status(a.exp)]||3)-(r[status(b.exp)]||3);
+  });
+  const g=document.getElementById('grid');
+  if(!list.length){g.innerHTML='<div class="empty">沒有符合的品項</div>';return;}
+  const owned=list.filter(i=>i.cat!=='想買'&&i.cat!=='備品');
+  const stock=list.filter(i=>i.cat==='備品');
+  const wish=list.filter(i=>i.cat==='想買');
+  let html='';
+  if(owned.length){
+    if(stock.length||wish.length)html+=`<div class="section-lbl">現有庫存</div>`;
+    html+=owned.map(cardHTML).join('');
+  }
+  if(stock.length){
+    html+=`<div class="section-lbl">備品</div>`;
+    html+=stock.map(cardHTML).join('');
+  }
+  if(wish.length){
+    html+=`<div class="section-lbl">想買清單</div>`;
+    html+=wish.map(cardHTML).join('');
+  }
+  g.innerHTML=html;
+}
+
+function cardHTML(i){
+  const st=status(i.exp);
+  const d=daysLeft(i.exp);
+  const isWish=i.cat==='想買';
+  const isStock=i.cat==='備品';
+  const bCls=st==='exp'?'eb-exp':st==='warn'?'eb-warn':'eb-ok';
+  const bTxt=st==='exp'?'已過期':st==='warn'?'快到期':'正常';
+  const dayStr=d===null?'':(d<0?`已過期 ${Math.abs(d)} 天`:d===0?'今日到期':`還有 ${d} 天`);
+  const shadesHTML=(i.shades||[]).map(s=>`
+    <div class="shade-pill-lg">
+      <div class="shade-dot-lg" style="background:${s.c}"></div>
+      <span class="cshade-label">${s.n}</span>
+    </div>`).join('');
+  return`<div class="card${isWish?' wishlist':(st!=='ok'&&st!=='none')?' '+st:''}" onclick="openEdit(${i.id})">
+    <div><span class="cat-chip chip-${i.cat}">${i.cat}</span></div>
+    <div class="cbrand">${i.brand}</div>
+    <div class="cname">${i.name}</div>
+    ${shadesHTML?`<div style="margin-bottom:7px">${shadesHTML}</div>`:''}
+    <div class="card-foot">
+      ${isWish||isStock?`<span style="font-size:11px;color:var(--muted)">${isWish?'想買清單':'備品'}</span>`:`
+        <div class="qty-ctrl">
+          <button class="qty-btn" onclick="event.stopPropagation();chQty(${i.id},-1)">−</button>
+          <span class="qty-val">${i.qty}</span>
+          <button class="qty-btn" onclick="event.stopPropagation();chQty(${i.id},1)">+</button>
+        </div>
+        ${i.exp?`<span class="exp-badge ${bCls}">${bTxt}</span>`:''}`}
+    </div>
+    ${dayStr&&!isWish&&!isStock?`<div class="exp-days">${dayStr}</div>`:''}
+    ${i.note?`<div class="card-note">${i.note}</div>`:''}
+  </div>`;
+}
+
+function chQty(id,d){
+  const it=items.find(i=>i.id===id);
+  if(it)it.qty=Math.max(0,Number(it.qty||0)+d);
+  saveData();render();
+}
+
+function addShade(code='',color='#D4879A'){shadeRows.push({n:code,c:color});renderShades();}
+function removeShade(i){shadeRows.splice(i,1);renderShades();}
+function renderShades(){
+  document.getElementById('shade-list').innerHTML=shadeRows.map((s,i)=>`
+    <div class="shade-row">
+      <input type="text" placeholder="色號名稱" value="${s.n}" oninput="shadeRows[${i}].n=this.value">
+      <input type="color" value="${s.c}" oninput="shadeRows[${i}].c=this.value">
+      <button class="rm-btn" onclick="removeShade(${i})">×</button>
+    </div>`).join('');
+}
+
+function openAdd(){
+  editId=null;shadeRows=[];
+  document.getElementById('sheet-title').textContent='新增化妝品';
+  document.getElementById('del-btn').style.display='none';
+  document.getElementById('f-cat').value='保養防曬';
+  ['f-brand','f-name','f-note'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('f-qty').value=1;
+  document.getElementById('f-buy').value='';
+  document.getElementById('f-exp').value='';
+  renderShades();
+  document.getElementById('overlay').classList.add('open');
+}
+
+function openEdit(id){
+  const it=items.find(i=>i.id===id);if(!it)return;
+  editId=id;shadeRows=(it.shades||[]).map(s=>({...s}));
+  document.getElementById('sheet-title').textContent='編輯';
+  document.getElementById('del-btn').style.display='';
+  document.getElementById('f-cat').value=it.cat;
+  document.getElementById('f-brand').value=it.brand;
+  document.getElementById('f-name').value=it.name;
+  document.getElementById('f-qty').value=it.qty;
+  document.getElementById('f-buy').value=it.buy||'';
+  document.getElementById('f-exp').value=it.exp||'';
+  document.getElementById('f-note').value=it.note||'';
+  renderShades();
+  document.getElementById('overlay').classList.add('open');
+}
+
+function closeSheet(){document.getElementById('overlay').classList.remove('open');}
+function bgClose(e){if(e.target===document.getElementById('overlay'))closeSheet();}
+
+function saveItem(){
+  const name=document.getElementById('f-name').value.trim();
+  if(!name){alert('請輸入名稱');return;}
+  const d={
+    cat:document.getElementById('f-cat').value,
+    brand:document.getElementById('f-brand').value.trim(),
+    name,
+    shades:shadeRows.filter(s=>s.n||s.c),
+    qty:Math.max(0,Number(document.getElementById('f-qty').value)||0),
+    buy:document.getElementById('f-buy').value,
+    exp:document.getElementById('f-exp').value,
+    note:document.getElementById('f-note').value
+  };
+  if(editId){const idx=items.findIndex(i=>i.id===editId);if(idx>=0)items[idx]={...items[idx],...d};}
+  else{d.id=Date.now();items.push(d);}
+  saveData();closeSheet();render();
+}
+
+function delItem(){
+  if(!confirm('確定刪除？'))return;
+  items=items.filter(i=>i.id!==editId);
+  saveData();closeSheet();render();
+}
+
+loadData();renderTabs();render();
+</script>
+</body>
+</html>
